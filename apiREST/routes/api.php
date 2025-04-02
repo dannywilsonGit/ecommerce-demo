@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 
 
@@ -18,7 +19,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('products' , ProductController::class);
 });
 
-
 Route::post('sanctum/token', function (Request $request) {
     $request->validate([
         'email' => 'required|string|email',
@@ -34,3 +34,7 @@ Route::post('sanctum/token', function (Request $request) {
 
     return  $user->createToken($request->device_name)->plainTextToken;
 });
+
+Route::post('/register' ,[AuthController::class , 'register']);
+Route::post('/login' ,[AuthController::class , 'login']);
+Route::middleware('auth:sanctum')->post('/logout' ,[AuthController::class , 'logout']);
