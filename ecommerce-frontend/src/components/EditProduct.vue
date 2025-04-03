@@ -1,60 +1,33 @@
 <template>
   <div class="edit-product-container">
     <div class="form-card">
-      <div class="header">
-        <h2>Modifier le produit</h2>
-        <router-link :to="'/products/' + product.id" class="back-btn">
-          <svg class="back-icon" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-          </svg>
-          Retour
-        </router-link>
-      </div>
+      <h2>Modifier le produit</h2>
 
-      <form @submit.prevent="submitForm" class="product-form">
+      <form @submit.prevent="submitForm">
+        <!-- Nom -->
         <div class="form-group">
-          <input
-              type="text"
-              v-model="product.name"
-              required
-              placeholder=" "
-          />
-          <label>Nom du produit*</label>
-          <div class="underline"></div>
+          <input v-model="product.name" required placeholder=" ">
+          <label>Nom du produit</label>
           <span class="error" v-if="errors.name">{{ errors.name[0] }}</span>
         </div>
 
+        <!-- Description -->
         <div class="form-group">
-          <textarea
-              v-model="product.description"
-              required
-              placeholder=" "
-              rows="3"
-          ></textarea>
-          <label>Description*</label>
-          <div class="underline"></div>
+          <textarea v-model="product.description" required placeholder=" " rows="3"></textarea>
+          <label>Description</label>
           <span class="error" v-if="errors.description">{{ errors.description[0] }}</span>
         </div>
 
+        <!-- Prix -->
         <div class="form-group">
-          <input
-              type="number"
-              v-model.number="product.price"
-              min="0"
-              step="0.01"
-              required
-              placeholder=" "
-          />
-          <label>Prix (€)*</label>
-          <div class="underline"></div>
+          <input v-model.number="product.price" type="number" min="0" step="0.01" required placeholder=" ">
+          <label>Prix (€)</label>
           <span class="error" v-if="errors.price">{{ errors.price[0] }}</span>
         </div>
 
         <div class="form-actions">
-          <button type="button" class="cancel-btn" @click="$router.go(-1)">
-            Annuler
-          </button>
-          <button type="submit" class="submit-btn" :disabled="loading">
+          <button type="button" @click="$router.go(-1)" class="cancel-btn">Annuler</button>
+          <button type="submit" :disabled="loading" class="submit-btn">
             <span v-if="!loading">Enregistrer</span>
             <div v-else class="spinner"></div>
           </button>
@@ -77,8 +50,7 @@ export default {
         price: 0
       },
       errors: {},
-      loading: false,
-      initialLoad: true
+      loading: false
     }
   },
   created() {
@@ -86,15 +58,16 @@ export default {
   },
   methods: {
     async fetchProduct() {
+      this.loading = true;
       try {
         const response = await axios.get(`/products/${this.$route.params.id}`);
         this.product = response.data;
       } catch (error) {
-        console.error('Error fetching product:', error);
-        this.$toast.error('Produit introuvable');
+        console.error('Fetch error:', error);
+        alert('Erreur de chargement');
         this.$router.push('/products');
       } finally {
-        this.initialLoad = false;
+        this.loading = false;
       }
     },
     async submitForm() {
@@ -102,15 +75,17 @@ export default {
       this.errors = {};
 
       try {
-        const response = await axios.put(`/products/${this.product.id}`, this.product);
-        this.$toast.success('Produit mis à jour avec succès');
-        this.$router.push(`/products/${this.product.id}`);
+        await axios.put(`/products/${this.product.id}`, this.product);
+        alert('Produit mis à jour');
+        await this.$router.push('/products');
       } catch (error) {
         if (error.response?.status === 422) {
-          this.errors = error.response.data.errors;
+          this.errors = error.response.data.errors || {};
         } else {
-          this.$toast.error("Erreur lors de la mise à jour");
-          console.error('Error:', error);
+          if (error.response?.status === 401) {
+            await this.$store.dispatch('logout');
+            this.$router.push('/login');
+          }
         }
       } finally {
         this.loading = false;
@@ -122,6 +97,7 @@ export default {
 
 <style scoped>
 .edit-product-container {
+  margin: 2rem auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -129,54 +105,6 @@ export default {
   padding: 2rem;
   background: #f8fafc;
 }
-
-.form-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  width: 100%;
-  max-width: 600px;
-  padding: 2rem;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.header h2 {
-  color: #1e293b;
-  font-size: 1.5rem;
-}
-
-.back-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.back-btn:hover {
-  color: #6366f1;
-}
-
-.back-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.form-group {
-  position: relative;
-  margin-bottom: 1.5rem;
-}
-
-/* Styles identiques à AddProduct.vue pour les inputs */
-/* ... */
 
 .form-actions {
   display: flex;
@@ -186,32 +114,106 @@ export default {
 }
 
 .cancel-btn {
-  padding: 0.75rem 1.5rem;
   background: #f1f5f9;
   color: #64748b;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.cancel-btn:hover {
-  background: #e2e8f0;
 }
 
 .submit-btn {
-  padding: 0.75rem 1.5rem;
+  background: #6366f1;
+  color: white;
+}
+.form-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+}
+
+.form-title {
+  color: #1e293b;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.form-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem 0;
+  font-size: 1rem;
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
+  outline: none;
+  background: transparent;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-group label {
+  position: absolute;
+  top: 0.75rem;
+  left: 0;
+  color: #64748b;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus ~ label,
+.form-group input:not(:placeholder-shown) ~ label,
+.form-group textarea:focus ~ label,
+.form-group textarea:not(:placeholder-shown) ~ label {
+  top: -0.5rem;
+  font-size: 0.75rem;
+  color: #6366f1;
+}
+
+.underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #6366f1;
+  transition: width 0.3s ease;
+}
+
+.form-group input:focus ~ .underline,
+.form-group textarea:focus ~ .underline {
+  width: 100%;
+}
+
+.error {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 0.75rem;
   background: #6366f1;
   color: white;
   border: none;
   border-radius: 8px;
+  font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
 }
 
-.submit-btn:hover:not(:disabled) {
+.submit-btn:hover {
   background: #4f46e5;
 }
 
@@ -226,11 +228,12 @@ export default {
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   border-top-color: white;
-  animation: spin 1s linear infinite;
+  animation: spin 1s ease-in-out infinite;
   margin: 0 auto;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
 </style>

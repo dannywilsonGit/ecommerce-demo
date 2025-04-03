@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from './components/Login.vue'
 import Register from './components/Register.vue'
 import ProductList from "@/components/ProductList.vue";
+import EditProduct from "@/components/EditProduct.vue";
 
 
 const routes = [
@@ -33,7 +34,14 @@ const routes = [
         name: 'AddProduct',
         component: () => import('./components/AddProduct.vue'),
         meta: { requiresAuth: true }
-    }
+    }  ,
+    {
+        path: '/products/edit/:id',  // :id est un paramètre dynamique
+        name: 'EditProduct',
+        component: EditProduct,
+        meta: { requiresAuth: true },
+        props: true  // Passe le paramètre id comme prop
+    },
 ]
 
 const router = createRouter({
