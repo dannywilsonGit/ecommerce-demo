@@ -65,6 +65,8 @@ export default {
 
         // Stockez correctement le token
         this.$store.commit('SET_LOGIN', response.data.token);
+        localStorage.setItem('token', response.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 
         // Redirigez vers la bonne route
         this.$router.push({ name: 'Products' }); // Utilisez le nom de la route

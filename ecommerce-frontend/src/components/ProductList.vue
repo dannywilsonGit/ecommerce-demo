@@ -182,8 +182,8 @@ export default {
     async deleteProduct(id) {
       try {
         await axios.delete(`/products/${id}`);
-        this.$toast.success('Produit supprimé avec succès');
-        this.fetchProducts();
+        alert('Produit supprimé avec succès' );
+        await this.fetchProducts();
       } catch (error) {
         console.error('Error deleting product:', error);
 

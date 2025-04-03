@@ -70,35 +70,49 @@ export default {
     }
   },
   methods: {
+
+
     async submitForm() {
       this.loading = true;
-      this.errors = {};
-
       try {
-        const response = await axios.post('/products', this.product);
-
-        this.$toast.success('Produit ajouté avec succès');
-        this.resetForm();
-        this.$router.push('/products'); // Redirige vers la liste des produits
-
+        await axios.post('/products', this.product);
+        Object.assign(this.product, { name: '', description: '', price: 0 });
+        this.$router.replace('/products').then(() => {
+          alert("Le produit a  bien ajouté ")
+        });
       } catch (error) {
-        if (error.response?.status === 422) {
-          this.errors = error.response.data.errors;
-        } else {
-          this.$toast.error("Erreur lors de l'ajout du produit");
-          console.error('Error:', error);
-        }
+        // Gestion erreurs...
+        this.errors = error.response?.data?.errors || {};
+            if (error.response?.status === 401) {
+               await this.$store.dispatch('logout');
+               await this.$router.push('/login');
+             }
       } finally {
         this.loading = false;
       }
-    },
-    resetForm() {
-      this.product = {
-        name: '',
-        description: '',
-        price: 0
-      };
-    }
+    } ,
+
+    // async submitForm() {
+    //   this.loading = true;
+    //   try {
+    //     const response = await axios.post('/products', this.product);
+    //     // Réinitialisation et redirection
+    //     this.product = { name: '', description: '', price: 0 };
+    //     this.$toast.success('Produit ajouté avec succès');
+    //     await this.$nextTick();
+    //     this.$router.push('/products');
+    //   } catch (error) {
+    //     this.errors = error.response?.data?.errors || {};
+    //     if (error.response?.status === 401) {
+    //       await this.$store.dispatch('logout');
+    //       await this.$router.push('/login');
+    //     }
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
+
+
   }
 }
 </script>

@@ -29,6 +29,8 @@ export default createStore({
         logout({ commit }) {
             return new Promise((resolve) => {
                 commit('SET_LOGOUT')
+                delete axios.defaults.headers.common['Authorization'];
+                localStorage.removeItem('token');
                 router.push({ name: 'Login' })
                     .then(() => resolve())
                     .catch(err => {
