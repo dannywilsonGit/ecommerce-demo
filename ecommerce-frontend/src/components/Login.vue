@@ -57,24 +57,20 @@ export default {
 
   methods: {
     async login() {
-      this.loading = true;
       try {
-        const reponse = await axios.post('/login', {email: this.email, password: this.password});
-        if (reponse.data.token) {
-          localStorage.setItem('token', reponse.data.token);
-        }
-        this.$store.commit('SET_LOGIN');
-        this.$router.push('/');
-      }
-      catch (error) {
-        console.error("An error occurred: " + error);
-      }
-      finally {
-        this.loading = false;
-      }
+        const response = await axios.post('/login', {
+          email: this.email,
+          password: this.password
+        });
 
+        // Stockez correctement le token
+        this.$store.commit('SET_LOGIN', response.data.token);
 
-
+        // Redirigez vers la bonne route
+        this.$router.push({ name: 'Products' }); // Utilisez le nom de la route
+      } catch (error) {
+        console.error('Login error:', error.response?.data);
+      }
     }
   }
 }

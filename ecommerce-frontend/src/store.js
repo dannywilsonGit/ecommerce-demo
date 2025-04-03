@@ -24,7 +24,7 @@ export default createStore({
     actions: {
         login({ commit }, token) {
             commit('SET_LOGIN', token)
-            router.push({ name: 'Home' }) // Redirect to home after login
+            router.push({ name: 'ProductList' }) // Redirect to ProductList after login
         },
         logout({ commit }) {
             return new Promise((resolve) => {

@@ -1,14 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from './components/Login.vue'
 import Register from './components/Register.vue'
-import Home from './components/Home.vue' // Add this import
+import ProductList from "@/components/ProductList.vue";
+
 
 const routes = [
     {
         path: '/',
-        name: 'Home',
-        component: Home,
+        name: 'ProductList',
+        component: ProductList,
         meta: { requiresAuth: true } // Protected route
+    },
+    {
+        path: '/products',
+        name: 'Products',
+        component: () => import('./components/ProductList.vue'),
+        meta: { requiresAuth: true }
     },
     {
         path: '/login',
@@ -21,6 +28,11 @@ const routes = [
         name: 'Register',
         component: Register,
         meta: { public: true }
+    } ,{
+        path: '/products/add',
+        name: 'AddProduct',
+        component: () => import('./components/AddProduct.vue'),
+        meta: { requiresAuth: true }
     }
 ]
 
@@ -38,7 +50,7 @@ router.beforeEach((to, from, next) => {
     }
 
     if (isPublicRoute && isAuthenticated && ['Login', 'Register'].includes(to.name)) {
-        return next({ name: 'Home' })
+        return next({ name: 'ProductList' })
     }
 
     next()
